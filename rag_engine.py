@@ -94,7 +94,7 @@ def _get_collection():
         except Exception:
             pass
 
-        _chroma_client = chromadb.PersistentClient(path=CHROMA_DIR)
+        _chroma_client = chromadb.EphemeralClient()
         _collection = _chroma_client.get_or_create_collection(
             name=COLLECTION,
             metadata={"hnsw:space": "cosine"},
@@ -169,10 +169,12 @@ def query_rag_stream(
     api_key: str | None = None,
 ) -> Tuple[List[dict], Generator]:
 
-    if not os.path.exists(CHROMA_DIR):
-        raise FileNotFoundError(
-            "Vector database not found. Please ingest documents first."
-        )
+    try:
+        col = _get_collection()
+        if col.count() == 0:
+            raise FileNotFoundError("Vector database is empty. Please ingest documents first.")
+    except Exception as e:
+        raise FileNotFoundError(f"Vector database not found or empty: {e}")
 
     resolved_key = api_key or os.getenv("GROQ_API_KEY", "")
     if not resolved_key:

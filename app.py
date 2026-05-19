@@ -449,7 +449,7 @@ def _db_info() -> dict:
             client = st.session_state["chroma_client"]
         else:
             import chromadb
-            client = chromadb.PersistentClient(path="./chroma_db")
+            client = chromadb.EphemeralClient()
         col    = client.get_or_create_collection("research_docs")
         count  = col.count()
         if count == 0:
@@ -577,8 +577,27 @@ with st.sidebar:
         if st.button("🗑️ Clear Database", key="clear_db_btn", use_container_width=True):
             import chromadb
             import rag_engine
+            import shutil
+            
+            # Reset in-memory client
             st.session_state["chroma_client"] = chromadb.EphemeralClient()
             rag_engine.reset_singletons()
+            
+            # Try to physically clean up disk directories as well
+            for folder in ["./chroma_db", "./data"]:
+                path = Path(folder)
+                if path.exists() and path.is_dir():
+                    try:
+                        shutil.rmtree(path)
+                    except Exception:
+                        # If locked, try deleting individual un-locked files inside
+                        for f in path.glob("**/*"):
+                            if f.is_file():
+                                try:
+                                    f.unlink()
+                                except Exception:
+                                    pass
+            
             st.success("Database cleared!")
             st.rerun()
     else:

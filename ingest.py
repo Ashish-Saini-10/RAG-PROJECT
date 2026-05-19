@@ -97,8 +97,8 @@ def build_vector_store(chunks: List, client=None) -> None:
         print("    -> Using provided Chroma client.")
     else:
         # Wipe and recreate ChromaDB collection
-        print(f"\n[+] Building ChromaDB index at '{CHROMA_DIR}' ...")
-        client = chromadb.PersistentClient(path=CHROMA_DIR)
+        print(f"\n[+] Building ChromaDB index (Ephemeral) ...")
+        client = chromadb.EphemeralClient()
 
     existing = [c.name for c in client.list_collections()]
     if COLLECTION in existing:
