@@ -2,6 +2,9 @@
 title CiteMind - RAG Assistant
 color 0A
 
+:: Prevent protobuf descriptor compatibility issues
+set PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+
 echo.
 echo  ============================================================
 echo   CiteMind - Academic RAG Assistant

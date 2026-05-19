@@ -6,6 +6,9 @@ Phase 6: Zero-knowledge system prompt with mandatory inline citations
 """
 
 import os
+# Force protobuf to use pure-Python implementation to avoid descriptor conflicts
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+
 from typing import Generator, List, Tuple
 
 import chromadb

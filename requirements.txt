@@ -18,3 +18,6 @@ groq>=0.9.0
 
 # ── Utilities ──────────────────────────────────────────────────
 python-dotenv>=1.0.0
+
+# ── Streamlit Cloud Compatibility Fix ─────────────────────────
+protobuf<=3.20.3

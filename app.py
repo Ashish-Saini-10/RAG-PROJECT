@@ -5,6 +5,22 @@ Phase 7: Split-screen Streamlit UI — Clean & Aligned
 """
 
 import os
+# Force protobuf to use pure-Python implementation to avoid descriptor conflicts
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+
+import sys
+try:
+    import google.protobuf
+    pb_ver = google.protobuf.__version__
+except Exception as e:
+    pb_ver = f"Error: {e}"
+
+with open("debug_env.txt", "w") as f:
+    f.write(f"sys.executable: {sys.executable}\n")
+    f.write(f"sys.version: {sys.version}\n")
+    f.write(f"protobuf version: {pb_ver}\n")
+    f.write(f"sys.path: {sys.path}\n")
+
 from pathlib import Path
 
 import streamlit as st
@@ -529,6 +545,12 @@ with st.sidebar:
 
     st.divider()
     st.caption("🔒 Zero-Knowledge Mode · All answers cited from your documents only.")
+
+    try:
+        import google.protobuf
+        st.markdown(f'<div style="font-size:0.65rem; color:#475569; text-align:center; margin-top:0.5rem;">System Diagnostics:<br>Protobuf v{google.protobuf.__version__}</div>', unsafe_allow_html=True)
+    except:
+        pass
 
 
 # ─────────────────────────────────────────────────────────────

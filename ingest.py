@@ -7,6 +7,9 @@ Phase 4: Embedding + ChromaDB Vector Storage (via FastEmbed / ONNX)
 """
 
 import os
+# Force protobuf to use pure-Python implementation to avoid descriptor conflicts
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+
 import sys
 from pathlib import Path
 from typing import List
