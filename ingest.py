@@ -140,7 +140,7 @@ def build_vector_store(chunks: List) -> None:
 # Entry Point
 def main(data_dir: str = DATA_DIR) -> dict:
     print("=" * 60)
-    print("  ShowYourWork - Document Ingestion Pipeline")
+    print("  CiteMind - Document Ingestion Pipeline")
     print("=" * 60)
 
     os.makedirs(data_dir, exist_ok=True)

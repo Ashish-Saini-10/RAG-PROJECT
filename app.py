@@ -1,5 +1,5 @@
 """
-app.py — ShowYourWork Academic RAG Assistant
+app.py — CiteMind Academic RAG Assistant
 =============================================
 Phase 7: Split-screen Streamlit UI — Clean & Aligned
 """
@@ -16,7 +16,7 @@ load_dotenv()
 # Page Config
 # ─────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="ShowYourWork — RAG Assistant",
+    page_title="CiteMind — RAG Assistant",
     page_icon="🔬",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -436,7 +436,7 @@ with st.sidebar:
       <div style="font-size:1.1rem; font-weight:800; letter-spacing:-0.02em;
                   background:linear-gradient(135deg,#60a5fa,#a78bfa);
                   -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-                  background-clip:text; margin-top:0.2rem;">ShowYourWork</div>
+                  background-clip:text; margin-top:0.2rem;">CiteMind</div>
       <div style="font-size:0.65rem; color:#475569; margin-top:0.2rem; letter-spacing:0.06em; text-transform:uppercase;">RAG Assistant</div>
     </div>
     """, unsafe_allow_html=True)
@@ -537,7 +537,7 @@ with st.sidebar:
 st.markdown("""
 <div class="app-header">
   <span class="app-logo">🔬</span>
-  <h1 class="app-title">ShowYourWork</h1>
+  <h1 class="app-title">CiteMind</h1>
   <p class="app-sub">Strict Verification · Academic RAG · Groq + LLaMA 3.1</p>
 </div>
 """, unsafe_allow_html=True)

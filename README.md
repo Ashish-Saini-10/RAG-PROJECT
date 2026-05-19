@@ -1,4 +1,4 @@
-# 🔬 ShowYourWork — Academic & Research RAG Assistant
+# 🔬 CiteMind — Academic & Research RAG Assistant
 
 > **Strict Verification RAG**: Every answer is grounded exclusively in your uploaded documents, with mandatory inline citations and full source traceability.
 
@@ -115,7 +115,7 @@ show-your-work-rag/
 ```bash
 git init
 git add .
-git commit -m "feat: initial ShowYourWork RAG app"
+git commit -m "feat: initial CiteMind RAG app"
 git remote add origin https://github.com/YOUR_USERNAME/show-your-work-rag.git
 git push -u origin main
 ```

@@ -1,10 +1,10 @@
 @echo off
-title ShowYourWork - RAG Assistant
+title CiteMind - RAG Assistant
 color 0A
 
 echo.
 echo  ============================================================
-echo   ShowYourWork - Academic RAG Assistant
+echo   CiteMind - Academic RAG Assistant
 echo   Starting up...
 echo  ============================================================
 echo.
