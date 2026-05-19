@@ -85,7 +85,7 @@ def chunk_documents(documents: List) -> List:
 
 
 # Phase 4 - Embedding + ChromaDB Storage
-def build_vector_store(chunks: List) -> None:
+def build_vector_store(chunks: List, client=None) -> None:
     print(f"\n[+] Loading FastEmbed ONNX model: '{EMBED_MODEL}' ...")
     print("    (First run downloads ~25MB model — subsequent runs are instant)")
 
@@ -93,9 +93,12 @@ def build_vector_store(chunks: List) -> None:
     embed_model = TextEmbedding(model_name=EMBED_MODEL)
     print("    -> Embedding model ready.")
 
-    # Wipe and recreate ChromaDB collection
-    print(f"\n[+] Building ChromaDB index at '{CHROMA_DIR}' ...")
-    client = chromadb.PersistentClient(path=CHROMA_DIR)
+    if client is not None:
+        print("    -> Using provided Chroma client.")
+    else:
+        # Wipe and recreate ChromaDB collection
+        print(f"\n[+] Building ChromaDB index at '{CHROMA_DIR}' ...")
+        client = chromadb.PersistentClient(path=CHROMA_DIR)
 
     existing = [c.name for c in client.list_collections()]
     if COLLECTION in existing:
@@ -141,7 +144,7 @@ def build_vector_store(chunks: List) -> None:
 
 
 # Entry Point
-def main(data_dir: str = DATA_DIR) -> dict:
+def main(data_dir: str = DATA_DIR, client=None) -> dict:
     print("=" * 60)
     print("  CiteMind - Document Ingestion Pipeline")
     print("=" * 60)
@@ -150,7 +153,7 @@ def main(data_dir: str = DATA_DIR) -> dict:
 
     documents = load_pdfs(data_dir)
     chunks    = chunk_documents(documents)
-    build_vector_store(chunks)
+    build_vector_store(chunks, client=client)
 
     num_docs = len(set(d.metadata["filename"] for d in documents))
 

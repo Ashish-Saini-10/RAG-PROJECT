@@ -82,6 +82,18 @@ def _get_embed_model() -> TextEmbedding:
 def _get_collection():
     global _chroma_client, _collection
     if _collection is None:
+        try:
+            import streamlit as st
+            if "chroma_client" in st.session_state:
+                _chroma_client = st.session_state["chroma_client"]
+                _collection = _chroma_client.get_or_create_collection(
+                    name=COLLECTION,
+                    metadata={"hnsw:space": "cosine"},
+                )
+                return _collection
+        except Exception:
+            pass
+
         _chroma_client = chromadb.PersistentClient(path=CHROMA_DIR)
         _collection = _chroma_client.get_or_create_collection(
             name=COLLECTION,

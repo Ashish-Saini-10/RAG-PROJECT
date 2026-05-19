@@ -22,11 +22,35 @@ with open("debug_env.txt", "w") as f:
     f.write(f"sys.path: {sys.path}\n")
 
 from pathlib import Path
+import shutil
 
 import streamlit as st
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Clean up any leftover persistent directories on disk to free up space
+if "disk_cleaned" not in st.session_state:
+    st.session_state["disk_cleaned"] = True
+    # Delete PDF files inside ./data
+    data_path = Path("./data")
+    if data_path.exists() and data_path.is_dir():
+        for f in data_path.glob("*.pdf"):
+            try:
+                f.unlink()
+            except Exception:
+                pass
+    # Delete ./chroma_db folder completely
+    chroma_path = Path("./chroma_db")
+    if chroma_path.exists() and chroma_path.is_dir():
+        try:
+            shutil.rmtree(chroma_path)
+        except Exception:
+            pass
+
+if "chroma_client" not in st.session_state:
+    import chromadb
+    st.session_state["chroma_client"] = chromadb.EphemeralClient()
 
 # ─────────────────────────────────────────────────────────────
 # Page Config
@@ -421,8 +445,11 @@ def _resolve_api_key() -> str:
 
 def _db_info() -> dict:
     try:
-        import chromadb
-        client = chromadb.PersistentClient(path="./chroma_db")
+        if "chroma_client" in st.session_state:
+            client = st.session_state["chroma_client"]
+        else:
+            import chromadb
+            client = chromadb.PersistentClient(path="./chroma_db")
         col    = client.get_or_create_collection("research_docs")
         count  = col.count()
         if count == 0:
@@ -430,7 +457,7 @@ def _db_info() -> dict:
         meta  = col.get(include=["metadatas"])["metadatas"] or []
         files = sorted(set(m.get("filename", "unknown") for m in meta))
         return {"count": count, "files": files}
-    except:
+    except Exception:
         return {"count": 0, "files": []}
 
 
@@ -498,32 +525,39 @@ with st.sidebar:
 
     if uploaded:
         if st.button("Ingest Documents", use_container_width=True):
-            bar = st.progress(0, text="Saving files...")
-            data_path = Path("./data")
-            data_path.mkdir(exist_ok=True)
+            bar = st.progress(0, text="Processing files...")
+            
+            import tempfile
+            import chromadb
 
-            if replace_mode:
-                for f in data_path.glob("*.pdf"): f.unlink()
+            # Create a temporary directory that is automatically deleted when the context manager exits
+            with tempfile.TemporaryDirectory() as temp_dir:
+                temp_path = Path(temp_dir)
+                
+                for i, uf in enumerate(uploaded):
+                    (temp_path / uf.name).write_bytes(uf.getbuffer())
+                    bar.progress((i + 1) / (len(uploaded) + 2), text=f"Saved {uf.name}")
 
-            for i, uf in enumerate(uploaded):
-                (data_path / uf.name).write_bytes(uf.getbuffer())
-                bar.progress((i + 1) / (len(uploaded) + 2), text=f"Saved {uf.name}")
+                bar.progress(0.65, text="Embedding chunks...")
+                try:
+                    if replace_mode:
+                        st.session_state["chroma_client"] = chromadb.EphemeralClient()
 
-            bar.progress(0.65, text="Embedding chunks...")
-            try:
-                from ingest import main as run_ingest
-                import rag_engine
-                result = run_ingest()
-                rag_engine.reset_singletons()
-                bar.progress(1.0, text="Complete!")
-                st.success(
-                    f"**{result['num_docs']}** doc(s) · **{result['num_pages']}** pages "
-                    f"· **{result['num_chunks']}** chunks indexed"
-                )
-                st.rerun()
-            except Exception as e:
-                bar.empty()
-                st.error(f"Ingestion failed: {e}")
+                    from ingest import main as run_ingest
+                    import rag_engine
+                    
+                    result = run_ingest(data_dir=str(temp_path), client=st.session_state["chroma_client"])
+                    rag_engine.reset_singletons()
+                    
+                    bar.progress(1.0, text="Complete!")
+                    st.success(
+                        f"**{result['num_docs']}** doc(s) · **{result['num_pages']}** pages "
+                        f"· **{result['num_chunks']}** chunks indexed"
+                    )
+                    st.rerun()
+                except Exception as e:
+                    bar.empty()
+                    st.error(f"Ingestion failed: {e}")
 
     st.divider()
 
@@ -539,6 +573,14 @@ with st.sidebar:
                     f'<div class="file-item">📄 {fname}</div>',
                     unsafe_allow_html=True,
                 )
+        st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
+        if st.button("🗑️ Clear Database", key="clear_db_btn", use_container_width=True):
+            import chromadb
+            import rag_engine
+            st.session_state["chroma_client"] = chromadb.EphemeralClient()
+            rag_engine.reset_singletons()
+            st.success("Database cleared!")
+            st.rerun()
     else:
         st.markdown('<span class="pill pill-warn">● No Index</span>', unsafe_allow_html=True)
         st.caption("Upload PDFs above to get started.")
